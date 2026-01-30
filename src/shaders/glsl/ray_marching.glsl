@@ -8,7 +8,7 @@
 #define MAX_DISTANCE 100.0
 
 float CLOUD_SCALE = 0.2;
-vec3 CLOUD_OFFSET = vec3(0);
+vec3 CLOUD_OFFSET = vec3(1.2);
 float DENSITY_THRESHOLD = 0.2;
 float DENSITY_MULTIPLIER = 0.2;
 float LIGHT_STEP_SIZE = 0.3;
@@ -68,7 +68,8 @@ float shadow(Ray ray, float k) {
 }
 
 float sample_density(vec3 pos) {
-    float noise = texture(tex, pos * CLOUD_SCALE).r;
+    float t = time * 0.0002;
+    float noise = texture(tex, pos * CLOUD_SCALE + vec3(t, 0., t)).r;
 
     float density = max(0.0, noise - DENSITY_THRESHOLD) * DENSITY_MULTIPLIER;
     return density;
