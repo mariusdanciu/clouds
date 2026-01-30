@@ -9,11 +9,11 @@
 
 float CLOUD_SCALE = 0.2;
 vec3 CLOUD_OFFSET = vec3(1.2);
-float DENSITY_THRESHOLD = 0.2;
-float DENSITY_MULTIPLIER = 0.2;
+float DENSITY_THRESHOLD = 0.22;
+float DENSITY_MULTIPLIER = 0.23;
 float LIGHT_STEP_SIZE = 0.3;
 float VOLUME_STEP_SIZE = 0.06;
-float ABSORPTION_COEFF = 1.0;
+float ABSORPTION_COEFF = 0.7;
 
 vec3 SUN_COLOR = vec3(1.0, 0.85, 0.7);
 
@@ -123,15 +123,18 @@ Hit ray_march(Ray ray, vec3 sky) {
         //     return Hit(t, h.material_index, col.xxx, true);
         // }
 
-        if(h.dist <= 0.0) {
+        float dist = h.dist;
+        float edgeFade = smoothstep(0.0, dist * 0.001, dist);
+
+        if(dist <= 0.0) {
             // Inside the volume
             step = VOLUME_STEP_SIZE;
             inside_volume = true;
             float density = sample_density(pos);
 
             if(density > 0.0) {
+                density *= edgeFade;
                 total_density += density * VOLUME_STEP_SIZE;
-                distance_traveled += VOLUME_STEP_SIZE;
 
                 float light_transmittance = light_march(pos, light_dir);
 
@@ -144,25 +147,13 @@ Hit ray_march(Ray ray, vec3 sky) {
 
                 float isotropic = 1.0 / (4. * 3.141592) * 10.0;
                 float phase = mix(isotropic, forward, 0.3);
+                phase *= edgeFade;
 
-                light_energy += density * transmittance * light_transmittance * VOLUME_STEP_SIZE * phase;
-                transmittance *= exp(-density * ABSORPTION_COEFF);
+                light_energy += total_density * transmittance * light_transmittance * VOLUME_STEP_SIZE * phase;
+                transmittance *= exp(-total_density * ABSORPTION_COEFF);
+                transmittance *= edgeFade;
 
                 accumulatedColor += light_energy * transmittance * SUN_COLOR;
-
-                // vec3 lightning = SUN_COLOR * phase * light_energy * 5;
-                // float multiple_scatter = pow(density, 0.5) * 0.1;
-                // vec3 ambient = sky * multiple_scatter;
-
-                // lightning += ambient;
-
-                // float scattering_coeff = 1.0;
-                // float extintion_coeff = ABSORPTION_COEFF;
-
-                // accumulatedColor += transmittance * density * lightning * VOLUME_STEP_SIZE * scattering_coeff;
-
-                // float sample_transmittance = exp(-density * extintion_coeff * VOLUME_STEP_SIZE);
-                // transmittance *= sample_transmittance;
 
                 if(transmittance < 0.01)
                     break;
@@ -173,7 +164,7 @@ Hit ray_march(Ray ray, vec3 sky) {
             //     transmittance = exp(-total_density);
             // }
             inside_volume = false;
-            step = max(h.dist * 0.5, 0.01);
+            step = max(dist * 0.5, 0.01);
         }
 
         t += step;
