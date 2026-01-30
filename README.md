@@ -1,5 +1,4 @@
-# vk-ray-marching
+# Volumetric clouds
 
 
-<img width="803" alt="image" src="https://github.com/user-attachments/assets/6bb8c17f-915a-407e-80a4-2aefa41794e8" />
-
+<img width="800" height="630" alt="image" src="https://github.com/user-attachments/assets/51659fe0-e1c9-446c-b094-808cc1953622" />
