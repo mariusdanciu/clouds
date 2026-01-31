@@ -7,10 +7,9 @@
 #define HIT_PRECISION 0.001
 #define MAX_DISTANCE 100.0
 
-float CLOUD_SCALE = 0.2;
-vec3 CLOUD_OFFSET = vec3(1.2);
+float CLOUD_SCALE = 0.1;
 float DENSITY_THRESHOLD = 0.22;
-float DENSITY_MULTIPLIER = 0.23;
+float DENSITY_MULTIPLIER = 0.3;
 float LIGHT_STEP_SIZE = 0.3;
 float VOLUME_STEP_SIZE = 0.06;
 float ABSORPTION_COEFF = 0.7;
@@ -124,15 +123,16 @@ Hit ray_march(Ray ray, vec3 sky) {
         // }
 
         float dist = h.dist;
-        float edgeFade = smoothstep(0.0, dist * 0.001, dist);
 
         if(dist <= 0.0) {
+
             // Inside the volume
             step = VOLUME_STEP_SIZE;
             inside_volume = true;
             float density = sample_density(pos);
 
             if(density > 0.0) {
+                float edgeFade = smoothstep(0.0, -0.6, dist);
                 density *= edgeFade;
                 total_density += density * VOLUME_STEP_SIZE;
 
@@ -147,11 +147,9 @@ Hit ray_march(Ray ray, vec3 sky) {
 
                 float isotropic = 1.0 / (4. * 3.141592) * 10.0;
                 float phase = mix(isotropic, forward, 0.3);
-                phase *= edgeFade;
 
                 light_energy += total_density * transmittance * light_transmittance * VOLUME_STEP_SIZE * phase;
                 transmittance *= exp(-total_density * ABSORPTION_COEFF);
-                transmittance *= edgeFade;
 
                 accumulatedColor += light_energy * transmittance * SUN_COLOR;
 
