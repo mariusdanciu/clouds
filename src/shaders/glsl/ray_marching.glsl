@@ -8,12 +8,12 @@
 #define MAX_DISTANCE 100.0
 
 float CLOUD_SCALE = 0.08;
-float DENSITY_THRESHOLD = 0.32;
-float DENSITY_MULTIPLIER = 0.3;
+float DENSITY_THRESHOLD = 0.22;
+float DENSITY_MULTIPLIER = 0.2;
 float LIGHT_STEP_SIZE = 0.3;
 float VOLUME_STEP_SIZE = 0.06;
-float ABSORPTION_COEFF = 0.8;
-float SOFTNESS = 0.8;
+float ABSORPTION_COEFF = 1.2;
+float SOFTNESS = 1;
 
 vec3 SUN_COLOR = vec3(1.0, 0.8, 0.6);
 
@@ -75,7 +75,9 @@ float sample_density(vec3 pos) {
     float noise = texture(tex, pos * CLOUD_SCALE + vec3(t, 0., t)).r;
 
     float density = max(0.0, noise - DENSITY_THRESHOLD) * DENSITY_MULTIPLIER;
-    density = soft(density, SOFTNESS);
+
+    density = smoothstep(DENSITY_THRESHOLD, DENSITY_THRESHOLD + SOFTNESS, noise);
+    //density = soft(density, SOFTNESS);
 
     return density;
 }
@@ -142,7 +144,7 @@ Hit ray_march(Ray ray, vec3 sky) {
                 float g = 0.8; // forward scattering parameter
                 float forward = (1.0 - g * g) / (4.0 * 3.14159 * pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
 
-                float isotropic = 1.0 / (4. * 3.141592) * 10.0;
+                float isotropic = 1.0 / (4. * 3.141592) * 20.0;
                 float phase = mix(isotropic, forward, 0.2);
 
                 light_energy += total_density * transmittance * light_transmittance * VOLUME_STEP_SIZE * phase;
