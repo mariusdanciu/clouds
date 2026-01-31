@@ -1,7 +1,8 @@
 # Volumetric clouds
 
 
-<img width="800" height="630" alt="image" src="https://github.com/user-attachments/assets/51659fe0-e1c9-446c-b094-808cc1953622" />
+<img width="808" height="640" alt="image" src="https://github.com/user-attachments/assets/ee57cf2b-61bd-4f35-95b4-61151d3815a3" />
+
 
 
 - Use Rust and Vulkano
