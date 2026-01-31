@@ -7,14 +7,15 @@
 #define HIT_PRECISION 0.001
 #define MAX_DISTANCE 100.0
 
-float CLOUD_SCALE = 0.1;
-float DENSITY_THRESHOLD = 0.22;
+float CLOUD_SCALE = 0.08;
+float DENSITY_THRESHOLD = 0.32;
 float DENSITY_MULTIPLIER = 0.3;
 float LIGHT_STEP_SIZE = 0.3;
 float VOLUME_STEP_SIZE = 0.06;
-float ABSORPTION_COEFF = 0.7;
+float ABSORPTION_COEFF = 0.8;
+float SOFTNESS = 0.8;
 
-vec3 SUN_COLOR = vec3(1.0, 0.85, 0.7);
+vec3 SUN_COLOR = vec3(1.0, 0.8, 0.6);
 
 vec3 normal(vec3 p) {
     float k = 0.5773 * 0.0005;
@@ -65,12 +66,17 @@ float shadow(Ray ray, float k) {
 
     return res;
 }
+float soft(float x, float softness) {
+    return 1.0 - exp(-x / softness);
+}
 
 float sample_density(vec3 pos) {
-    float t = time * 0.0002;
+    float t = time * 0.0001;
     float noise = texture(tex, pos * CLOUD_SCALE + vec3(t, 0., t)).r;
 
     float density = max(0.0, noise - DENSITY_THRESHOLD) * DENSITY_MULTIPLIER;
+    density = soft(density, SOFTNESS);
+
     return density;
 }
 
@@ -113,15 +119,6 @@ Hit ray_march(Ray ray, vec3 sky) {
         vec3 pos = ray.origin + ray.direction * t;
         Hit h = sdf(pos);
 
-        // if(h.dist < 0.001) {
-        //     // Touched the volume
-
-        //     float density = sample_density(pos);
-        //     vec4 col = texture(tex, pos * 0.1);
-
-        //     return Hit(t, h.material_index, col.xxx, true);
-        // }
-
         float dist = h.dist;
 
         if(dist <= 0.0) {
@@ -132,7 +129,7 @@ Hit ray_march(Ray ray, vec3 sky) {
             float density = sample_density(pos);
 
             if(density > 0.0) {
-                float edgeFade = smoothstep(0.0, -0.6, dist);
+                float edgeFade = smoothstep(0.0, -0.8, dist);
                 density *= edgeFade;
                 total_density += density * VOLUME_STEP_SIZE;
 
@@ -146,12 +143,12 @@ Hit ray_march(Ray ray, vec3 sky) {
                 float forward = (1.0 - g * g) / (4.0 * 3.14159 * pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5));
 
                 float isotropic = 1.0 / (4. * 3.141592) * 10.0;
-                float phase = mix(isotropic, forward, 0.3);
+                float phase = mix(isotropic, forward, 0.2);
 
                 light_energy += total_density * transmittance * light_transmittance * VOLUME_STEP_SIZE * phase;
                 transmittance *= exp(-total_density * ABSORPTION_COEFF);
 
-                accumulatedColor += light_energy * transmittance * SUN_COLOR;
+                accumulatedColor += light_energy * transmittance * (mix(SUN_COLOR, sky, 0.1));
 
                 if(transmittance < 0.01)
                     break;
