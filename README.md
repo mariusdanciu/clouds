@@ -1,7 +1,7 @@
 # Volumetric clouds
 
 
-<img width="808" height="640" alt="image" src="https://github.com/user-attachments/assets/ee57cf2b-61bd-4f35-95b4-61151d3815a3" />
+<img width="804" height="635" alt="image" src="https://github.com/user-attachments/assets/ad3be816-271b-4c68-a00a-364397016dbb" />
 
 
 
